@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>细胞铺板计算器 (Cell Seeding Calculator)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        .calculator-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-group label {
+            flex: 1;
+            font-weight: 500;
+        }
+        .form-group input {
+            flex: 0 0 150px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 25px 0;
+        }
+        .result-group {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+        .result-label {
+            font-weight: bold;
+            color: #475569;
+        }
+        .result-value {
+            font-family: monospace;
+            font-size: 16px;
+            color: #1e40af;
+        }
+        .sub-value {
+            font-size: 14px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <h2>细胞铺板计算器<br><small style="font-size: 16px; color: #666;">Cell Seeding Calculator</small></h2>
+
+    <div class="form-group">
+        <label>Average cells (k) <br><small>细胞计数</small></label>
+        <input type="number" id="avgCells" value="211" step="any" oninput="calculate()">
+    </div>
+    <div class="form-group">
+        <label>Medium volume for each wells (mL) <br><small>每孔培养基体积</small></label>
+        <input type="number" id="mediumVol" value="3" step="any" oninput="calculate()">
+    </div>
+    <div class="form-group">
+        <label>Seeding cells (k) <br><small>目标铺板细胞数</small></label>
+        <input type="number" id="seedingCells" value="200" step="any" oninput="calculate()">
+    </div>
+    <div class="form-group">
+        <label>Wells for preparation <br><small>准备孔数</small></label>
+        <input type="number" id="wells" value="7" step="any" oninput="calculate()">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result-group">
+        <div class="result-row">
+            <span class="result-label">Cells/mL (计算细胞浓度):</span>
+            <span class="result-value" id="cellsPerMl">527,500</span>
+        </div>
+        <div class="result-row">
+            <span class="result-label">Concentration we want (目标细胞数):</span>
+            <span class="result-value" id="targetConcentration">200,000</span>
+        </div>
+    </div>
+
+    <div class="result-group" style="border-left-color: #10b981;">
+        <div class="result-row">
+            <span class="result-label">Total volume for seeding: <br><small>细胞悬液抽取体积</small></span>
+            <div style="text-align: right;">
+                <span class="result-value" id="seedingVolML">2.654 mL</span><br>
+                <span class="result-value sub-value" id="seedingVolUL">2654.03 μL</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-group" style="border-left-color: #f59e0b;">
+        <div class="result-row">
+            <span class="result-label">SF++ (Medium volume): <br><small>需添加的培养基体积</small></span>
+            <div style="text-align: right;">
+                <span class="result-value" id="sfPlusML">18.346 mL</span><br>
+                <span class="result-value sub-value" id="sfPlusUL">18345.97 μL</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function formatNumber(num, decimals = 3) {
+        if (!isFinite(num)) return "0";
+        return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
+    }
+
+    function calculate() {
+        // 获取输入值
+        const avgCells = parseFloat(document.getElementById('avgCells').value) || 0;
+        const mediumVol = parseFloat(document.getElementById('mediumVol').value) || 0;
+        const seedingCells = parseFloat(document.getElementById('seedingCells').value) || 0;
+        const wells = parseFloat(document.getElementById('wells').value) || 0;
+
+        // 核心计算逻辑
+        const cellsPerMl = avgCells * 2500;
+        const targetConcentration = seedingCells * 1000;
+        
+        let seedingVolML = 0;
+        if (cellsPerMl > 0) {
+            seedingVolML = (targetConcentration * wells) / cellsPerMl;
+        }
+        
+        const totalMixVol = mediumVol * wells;
+        const sfPlusML = totalMixVol - seedingVolML;
+
+        // 更新 UI (带有格式化)
+        document.getElementById('cellsPerMl').innerText = formatNumber(cellsPerMl, 0);
+        document.getElementById('targetConcentration').innerText = formatNumber(targetConcentration, 0);
+        
+        document.getElementById('seedingVolML').innerText = formatNumber(seedingVolML, 4) + " mL";
+        document.getElementById('seedingVolUL').innerText = formatNumber(seedingVolML * 1000, 2) + " μL";
+        
+        document.getElementById('sfPlusML').innerText = formatNumber(sfPlusML, 4) + " mL";
+        document.getElementById('sfPlusUL').innerText = formatNumber(sfPlusML * 1000, 2) + " μL";
+    }
+
+    // 初始化时运行一次以确保显示正确初始值
+    window.onload = calculate;
+</script>
+
+</body>
+</html>
