@@ -1,135 +1,210 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>细胞铺板计算器 (Cell Seeding Calculator)</title>
+    <title>Cell Seeding Calculator</title>
     <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --primary: #3b82f6;
+            --primary-bg: #eff6ff;
+            --primary-text: #1d4ed8;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --success-text: #047857;
+            --info-bg: #f8fafc;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f4f6;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 40px 20px;
             margin: 0;
+            box-sizing: border-box;
         }
+
         .calculator-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            max-width: 600px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+            max-width: 550px;
             width: 100%;
         }
+
         h2 {
             text-align: center;
-            color: #2c3e50;
+            color: #0f172a;
             margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .form-group label {
             flex: 1;
             font-weight: 500;
+            font-size: 15px;
+            color: var(--text-main);
         }
+
         .form-group input {
-            flex: 0 0 150px;
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            flex: 0 0 140px;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             font-size: 16px;
+            color: #0f172a;
+            transition: all 0.2s ease;
+            outline: none;
+            text-align: right;
+            font-family: monospace;
         }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
         .divider {
             height: 1px;
-            background-color: #e5e7eb;
-            margin: 25px 0;
+            background-color: #e2e8f0;
+            margin: 30px 0;
         }
+
         .result-group {
-            background-color: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #3b82f6;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border-left: 4px solid transparent;
         }
+
+        .result-info {
+            background-color: var(--info-bg);
+            border-color: #94a3b8;
+        }
+
+        .result-success {
+            background-color: var(--success-bg);
+            border-color: var(--success);
+        }
+
+        .result-primary {
+            background-color: var(--primary-bg);
+            border-color: var(--primary);
+        }
+
         .result-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            margin-bottom: 10px;
         }
+
         .result-row:last-child {
             margin-bottom: 0;
         }
+
         .result-label {
-            font-weight: bold;
-            color: #475569;
-        }
-        .result-value {
-            font-family: monospace;
-            font-size: 16px;
-            color: #1e40af;
-        }
-        .sub-value {
+            font-weight: 600;
             font-size: 14px;
-            color: #64748b;
+        }
+
+        .result-info .result-label { color: #475569; }
+        .result-success .result-label { color: var(--success-text); }
+        .result-primary .result-label { color: var(--primary-text); }
+
+        .result-value {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .result-info .result-value { color: #334155; }
+        .result-success .result-value { color: var(--success-text); }
+        .result-primary .result-value { color: var(--primary-text); }
+
+        .sub-value {
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .value-container {
+            text-align: right;
         }
     </style>
 </head>
 <body>
 
 <div class="calculator-card">
-    <h2>细胞铺板计算器<br><small style="font-size: 16px; color: #666;">Cell Seeding Calculator</small></h2>
+    <h2>Cell Seeding Calculator</h2>
 
     <div class="form-group">
-        <label>Average cells (k) <br><small>细胞计数</small></label>
+        <label>Average cells (k)</label>
         <input type="number" id="avgCells" value="211" step="any" oninput="calculate()">
     </div>
     <div class="form-group">
-        <label>Medium volume for each wells (mL) <br><small>每孔培养基体积</small></label>
+        <label>Medium volume for each well (mL)</label>
         <input type="number" id="mediumVol" value="3" step="any" oninput="calculate()">
     </div>
     <div class="form-group">
-        <label>Seeding cells (k) <br><small>目标铺板细胞数</small></label>
+        <label>Seeding cells (k)</label>
         <input type="number" id="seedingCells" value="200" step="any" oninput="calculate()">
     </div>
     <div class="form-group">
-        <label>Wells for preparation <br><small>准备孔数</small></label>
+        <label>Wells for preparation</label>
         <input type="number" id="wells" value="7" step="any" oninput="calculate()">
     </div>
 
     <div class="divider"></div>
 
-    <div class="result-group">
+    <div class="result-group result-info">
         <div class="result-row">
-            <span class="result-label">Cells/mL (计算细胞浓度):</span>
+            <span class="result-label">Cells/mL</span>
             <span class="result-value" id="cellsPerMl">527,500</span>
         </div>
         <div class="result-row">
-            <span class="result-label">Concentration we want (目标细胞数):</span>
+            <span class="result-label">Target Concentration</span>
             <span class="result-value" id="targetConcentration">200,000</span>
         </div>
     </div>
 
-    <div class="result-group" style="border-left-color: #10b981;">
+    <div class="result-group result-success">
         <div class="result-row">
-            <span class="result-label">Total volume for seeding: <br><small>细胞悬液抽取体积</small></span>
-            <div style="text-align: right;">
-                <span class="result-value" id="seedingVolML">2.654 mL</span><br>
+            <span class="result-label">Total Volume for Seeding</span>
+            <div class="value-container">
+                <span class="result-value" id="seedingVolML">2.654 mL</span>
                 <span class="result-value sub-value" id="seedingVolUL">2654.03 μL</span>
             </div>
         </div>
     </div>
 
-    <div class="result-group" style="border-left-color: #f59e0b;">
+    <div class="result-group result-primary">
         <div class="result-row">
-            <span class="result-label">SF++ (Medium volume): <br><small>需添加的培养基体积</small></span>
-            <div style="text-align: right;">
-                <span class="result-value" id="sfPlusML">18.346 mL</span><br>
+            <span class="result-label">SF++ (Medium Volume)</span>
+            <div class="value-container">
+                <span class="result-value" id="sfPlusML">18.346 mL</span>
                 <span class="result-value sub-value" id="sfPlusUL">18345.97 μL</span>
             </div>
         </div>
@@ -143,13 +218,13 @@
     }
 
     function calculate() {
-        // 获取输入值
+        // Get input values
         const avgCells = parseFloat(document.getElementById('avgCells').value) || 0;
         const mediumVol = parseFloat(document.getElementById('mediumVol').value) || 0;
         const seedingCells = parseFloat(document.getElementById('seedingCells').value) || 0;
         const wells = parseFloat(document.getElementById('wells').value) || 0;
 
-        // 核心计算逻辑
+        // Core calculation logic
         const cellsPerMl = avgCells * 2500;
         const targetConcentration = seedingCells * 1000;
         
@@ -161,7 +236,7 @@
         const totalMixVol = mediumVol * wells;
         const sfPlusML = totalMixVol - seedingVolML;
 
-        // 更新 UI (带有格式化)
+        // Update UI with formatted numbers
         document.getElementById('cellsPerMl').innerText = formatNumber(cellsPerMl, 0);
         document.getElementById('targetConcentration').innerText = formatNumber(targetConcentration, 0);
         
@@ -172,7 +247,7 @@
         document.getElementById('sfPlusUL').innerText = formatNumber(sfPlusML * 1000, 2) + " μL";
     }
 
-    // 初始化时运行一次以确保显示正确初始值
+    // Run once on load to ensure initial values are calculated and displayed correctly
     window.onload = calculate;
 </script>
 
