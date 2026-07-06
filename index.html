@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell Seeding Calculator</title>
+    <title>Lab Calculators</title>
     <style>
         :root {
             --bg-color: #f0f4f8;
@@ -18,6 +18,12 @@
             --success-bg: #ecfdf5;
             --success-text: #047857;
             --info-bg: #f8fafc;
+            --warning-bg: #fffbeb;
+            --warning-text: #b45309;
+            --warning-border: #f59e0b;
+            --purple-bg: #f5f3ff;
+            --purple-text: #6d28d9;
+            --purple-border: #8b5cf6;
         }
 
         body {
@@ -25,11 +31,12 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
-            justify-content: center;
+            flex-direction: column; 
             align-items: center;
             min-height: 100vh;
             padding: 40px 20px;
             margin: 0;
+            gap: 30px; 
             box-sizing: border-box;
         }
 
@@ -97,20 +104,11 @@
             border-left: 4px solid transparent;
         }
 
-        .result-info {
-            background-color: var(--info-bg);
-            border-color: #94a3b8;
-        }
-
-        .result-success {
-            background-color: var(--success-bg);
-            border-color: var(--success);
-        }
-
-        .result-primary {
-            background-color: var(--primary-bg);
-            border-color: var(--primary);
-        }
+        .result-info { background-color: var(--info-bg); border-color: #94a3b8; }
+        .result-success { background-color: var(--success-bg); border-color: var(--success); }
+        .result-primary { background-color: var(--primary-bg); border-color: var(--primary); }
+        .result-warning { background-color: var(--warning-bg); border-color: var(--warning-border); }
+        .result-purple { background-color: var(--purple-bg); border-color: var(--purple-border); }
 
         .result-row {
             display: flex;
@@ -127,10 +125,20 @@
             font-weight: 600;
             font-size: 14px;
         }
+        
+        .result-label small {
+            display: block;
+            font-weight: normal;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
 
         .result-info .result-label { color: #475569; }
         .result-success .result-label { color: var(--success-text); }
         .result-primary .result-label { color: var(--primary-text); }
+        .result-warning .result-label { color: var(--warning-text); }
+        .result-purple .result-label { color: var(--purple-text); }
 
         .result-value {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -141,6 +149,8 @@
         .result-info .result-value { color: #334155; }
         .result-success .result-value { color: var(--success-text); }
         .result-primary .result-value { color: var(--primary-text); }
+        .result-warning .result-value { color: var(--warning-text); }
+        .result-purple .result-value { color: var(--purple-text); }
 
         .sub-value {
             font-size: 13px;
@@ -157,24 +167,25 @@
 </head>
 <body>
 
+<!-- 1. 铺板计算器卡片 -->
 <div class="calculator-card">
     <h2>Cell Seeding Calculator</h2>
 
     <div class="form-group">
         <label>Average cells (k)</label>
-        <input type="number" id="avgCells" value="211" step="any" oninput="calculate()">
+        <input type="number" id="avgCells" value="211" step="any" oninput="calculateSeeding()">
     </div>
     <div class="form-group">
         <label>Medium volume for each well (mL)</label>
-        <input type="number" id="mediumVol" value="3" step="any" oninput="calculate()">
+        <input type="number" id="mediumVol" value="3" step="any" oninput="calculateSeeding()">
     </div>
     <div class="form-group">
         <label>Seeding cells (k)</label>
-        <input type="number" id="seedingCells" value="200" step="any" oninput="calculate()">
+        <input type="number" id="seedingCells" value="200" step="any" oninput="calculateSeeding()">
     </div>
     <div class="form-group">
         <label>Wells for preparation</label>
-        <input type="number" id="wells" value="7" step="any" oninput="calculate()">
+        <input type="number" id="wells" value="7" step="any" oninput="calculateSeeding()">
     </div>
 
     <div class="divider"></div>
@@ -211,20 +222,104 @@
     </div>
 </div>
 
+<!-- 2. 浓度计算器卡片 -->
+<div class="calculator-card">
+    <h2>浓度计算</h2>
+
+    <div class="form-group">
+        <label>溶液体积 (mL)</label>
+        <input type="number" id="solutionVol" value="10" step="any" oninput="calculateConcentration()">
+    </div>
+    <div class="form-group">
+        <label>CHIR 目标浓度 (μM)</label>
+        <input type="number" id="chirTarget" value="3" step="any" oninput="calculateConcentration()">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result-group result-warning">
+        <div class="result-row">
+            <div class="result-label">
+                CHIR 所需体积
+                <small>母液: 10 mM</small>
+            </div>
+            <span class="result-value" id="chirVol">3.00 μL</span>
+        </div>
+    </div>
+
+    <div class="result-group result-success">
+        <div class="result-row">
+            <div class="result-label">
+                FGF 所需体积
+                <small>母液: 100 μg/mL (目标: 200 ng/mL)</small>
+            </div>
+            <span class="result-value" id="fgfVol">20.00 μL</span>
+        </div>
+    </div>
+
+    <div class="result-group result-primary">
+        <div class="result-row">
+            <div class="result-label">
+                肝素 (Heparin) 所需体积
+                <small>母液: 1 mg/mL (目标: 1 μg/mL)</small>
+            </div>
+            <span class="result-value" id="heparinVol">10.00 μL</span>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Generation 卡片 (新增) -->
+<div class="calculator-card">
+    <h2>Generation (类器官生成计算)</h2>
+
+    <div class="form-group">
+        <label>计数器细胞数</label>
+        <input type="number" id="genAvgCells" value="211" step="any" oninput="calculateGeneration()">
+    </div>
+    <div class="form-group">
+        <label>想要的类器官总数</label>
+        <input type="number" id="genTotalOrganoids" value="10" step="any" oninput="calculateGeneration()">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result-group result-info">
+        <div class="result-row">
+            <div class="result-label">
+                细胞浓度 (Cells/mL)
+                <small>计算式: (细胞数 × 10000) ÷ 4</small>
+            </div>
+            <span class="result-value" id="genCellsPerMl">527,500</span>
+        </div>
+    </div>
+
+    <div class="result-group result-purple">
+        <div class="result-row">
+            <div class="result-label">
+                所需的溶液体积
+                <small>计算式: (200000 ÷ 细胞浓度) × 类器官总数</small>
+            </div>
+            <div class="value-container">
+                <span class="result-value" id="genReqVolML">3.791 mL</span>
+                <span class="result-value sub-value" id="genReqVolUL">3791.47 μL</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function formatNumber(num, decimals = 3) {
         if (!isFinite(num)) return "0";
         return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
     }
 
-    function calculate() {
-        // Get input values
+    // 1. 铺板计算逻辑
+    function calculateSeeding() {
         const avgCells = parseFloat(document.getElementById('avgCells').value) || 0;
         const mediumVol = parseFloat(document.getElementById('mediumVol').value) || 0;
         const seedingCells = parseFloat(document.getElementById('seedingCells').value) || 0;
         const wells = parseFloat(document.getElementById('wells').value) || 0;
 
-        // Core calculation logic
         const cellsPerMl = avgCells * 2500;
         const targetConcentration = seedingCells * 1000;
         
@@ -236,7 +331,6 @@
         const totalMixVol = mediumVol * wells;
         const sfPlusML = totalMixVol - seedingVolML;
 
-        // Update UI with formatted numbers
         document.getElementById('cellsPerMl').innerText = formatNumber(cellsPerMl, 0);
         document.getElementById('targetConcentration').innerText = formatNumber(targetConcentration, 0);
         
@@ -247,8 +341,52 @@
         document.getElementById('sfPlusUL').innerText = formatNumber(sfPlusML * 1000, 2) + " μL";
     }
 
-    // Run once on load to ensure initial values are calculated and displayed correctly
-    window.onload = calculate;
+    // 2. 浓度计算逻辑
+    function calculateConcentration() {
+        const solutionVolML = parseFloat(document.getElementById('solutionVol').value) || 0;
+        const chirTargetUM = parseFloat(document.getElementById('chirTarget').value) || 0;
+
+        const chirStockUM = 10000;      
+        const fgfStockUgMl = 100;       
+        const heparinStockUgMl = 1000;  
+
+        const fgfTargetUgMl = 0.2;      
+        const heparinTargetUgMl = 1;    
+
+        const chirVolUl = (chirTargetUM / chirStockUM) * solutionVolML * 1000;
+        const fgfVolUl = (fgfTargetUgMl / fgfStockUgMl) * solutionVolML * 1000;
+        const heparinVolUl = (heparinTargetUgMl / heparinStockUgMl) * solutionVolML * 1000;
+
+        document.getElementById('chirVol').innerText = formatNumber(chirVolUl, 2) + " μL";
+        document.getElementById('fgfVol').innerText = formatNumber(fgfVolUl, 2) + " μL";
+        document.getElementById('heparinVol').innerText = formatNumber(heparinVolUl, 2) + " μL";
+    }
+
+    // 3. Generation (生成) 计算逻辑
+    function calculateGeneration() {
+        const cellCount = parseFloat(document.getElementById('genAvgCells').value) || 0;
+        const organoidsTotal = parseFloat(document.getElementById('genTotalOrganoids').value) || 0;
+
+        // 步骤1：乘以10000再除以4，得到细胞浓度 (Cells/mL)
+        const cellsPerMl = (cellCount * 10000) / 4;
+        
+        // 步骤2：目标数为200000，计算公式为 (200000 / cellsPerMl) * organoidsTotal
+        let reqVolML = 0;
+        if (cellsPerMl > 0) {
+            reqVolML = (200000 / cellsPerMl) * organoidsTotal;
+        }
+
+        document.getElementById('genCellsPerMl').innerText = formatNumber(cellsPerMl, 0);
+        document.getElementById('genReqVolML').innerText = formatNumber(reqVolML, 4) + " mL";
+        document.getElementById('genReqVolUL').innerText = formatNumber(reqVolML * 1000, 2) + " μL";
+    }
+
+    // 页面加载时初始化所有计算器
+    window.onload = function() {
+        calculateSeeding();
+        calculateConcentration();
+        calculateGeneration();
+    };
 </script>
 
 </body>
