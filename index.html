@@ -31,13 +31,29 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
-            flex-direction: column; 
-            align-items: center;
+            justify-content: center;
+            align-items: flex-start; /* Align top to avoid content being covered on mobile */
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 40px 20px 120px 20px; /* Leave 120px space at the bottom for the nav bar */
             margin: 0;
-            gap: 30px; 
             box-sizing: border-box;
+        }
+
+        /* View container, controls display/hide */
+        .view-section {
+            display: none; /* Hide all views by default */
+            width: 100%;
+            max-width: 550px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .view-section.active {
+            display: block; /* Show when active */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .calculator-card {
@@ -45,8 +61,8 @@
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
-            max-width: 550px;
             width: 100%;
+            box-sizing: border-box;
         }
 
         h2 {
@@ -117,22 +133,10 @@
             margin-bottom: 10px;
         }
 
-        .result-row:last-child {
-            margin-bottom: 0;
-        }
+        .result-row:last-child { margin-bottom: 0; }
 
-        .result-label {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .result-label small {
-            display: block;
-            font-weight: normal;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+        .result-label { font-weight: 600; font-size: 14px; }
+        .result-label small { display: block; font-weight: normal; font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
         .result-info .result-label { color: #475569; }
         .result-success .result-label { color: var(--success-text); }
@@ -152,168 +156,248 @@
         .result-warning .result-value { color: var(--warning-text); }
         .result-purple .result-value { color: var(--purple-text); }
 
-        .sub-value {
-            font-size: 13px;
-            font-weight: 500;
-            opacity: 0.8;
-            margin-top: 4px;
-            display: block;
+        .sub-value { font-size: 13px; font-weight: 500; opacity: 0.8; margin-top: 4px; display: block; }
+        .value-container { text-align: right; }
+
+        /* --- Bottom Nav Bar Styles --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px 20px 25px 20px;
+            background: rgba(240, 244, 248, 0.85); /* Semi-transparent background */
+            backdrop-filter: blur(10px); /* Frosted glass effect */
+            box-sizing: border-box;
+            z-index: 1000;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03);
         }
 
-        .value-container {
-            text-align: right;
+        .nav-card {
+            background: var(--card-bg);
+            border: 2px solid transparent;
+            border-radius: 14px;
+            padding: 16px 10px;
+            flex: 1;
+            max-width: 160px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            transition: all 0.25s ease;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Active State */
+        .nav-card.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-bg);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        @media (max-width: 480px) {
+            .nav-card { font-size: 13px; padding: 12px 5px; }
+            .calculator-card { padding: 30px 20px; }
         }
     </style>
 </head>
 <body>
 
-<!-- 1. 铺板计算器卡片 -->
-<div class="calculator-card">
-    <h2>Cell Seeding Calculator</h2>
+    <!-- 1. Seeding View -->
+    <div id="view-seeding" class="view-section active">
+        <div class="calculator-card">
+            <h2>Cell Seeding</h2>
 
-    <div class="form-group">
-        <label>Average cells (k)</label>
-        <input type="number" id="avgCells" value="211" step="any" oninput="calculateSeeding()">
-    </div>
-    <div class="form-group">
-        <label>Medium volume for each well (mL)</label>
-        <input type="number" id="mediumVol" value="3" step="any" oninput="calculateSeeding()">
-    </div>
-    <div class="form-group">
-        <label>Seeding cells (k)</label>
-        <input type="number" id="seedingCells" value="200" step="any" oninput="calculateSeeding()">
-    </div>
-    <div class="form-group">
-        <label>Wells for preparation</label>
-        <input type="number" id="wells" value="7" step="any" oninput="calculateSeeding()">
-    </div>
+            <div class="form-group">
+                <label>Average cells (k)</label>
+                <input type="number" id="avgCells" value="211" step="any" oninput="calculateSeeding()">
+            </div>
+            <div class="form-group">
+                <label>Medium volume for each well (mL)</label>
+                <input type="number" id="mediumVol" value="3" step="any" oninput="calculateSeeding()">
+            </div>
+            <div class="form-group">
+                <label>Seeding cells (k)</label>
+                <input type="number" id="seedingCells" value="200" step="any" oninput="calculateSeeding()">
+            </div>
+            <div class="form-group">
+                <label>Wells for preparation</label>
+                <input type="number" id="wells" value="7" step="any" oninput="calculateSeeding()">
+            </div>
 
-    <div class="divider"></div>
+            <div class="divider"></div>
 
-    <div class="result-group result-info">
-        <div class="result-row">
-            <span class="result-label">Cells/mL</span>
-            <span class="result-value" id="cellsPerMl">527,500</span>
-        </div>
-        <div class="result-row">
-            <span class="result-label">Target Concentration</span>
-            <span class="result-value" id="targetConcentration">200,000</span>
-        </div>
-    </div>
+            <div class="result-group result-info">
+                <div class="result-row">
+                    <span class="result-label">Cells/mL</span>
+                    <span class="result-value" id="cellsPerMl">527,500</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Target Concentration</span>
+                    <span class="result-value" id="targetConcentration">200,000</span>
+                </div>
+            </div>
 
-    <div class="result-group result-success">
-        <div class="result-row">
-            <span class="result-label">Total Volume for Seeding</span>
-            <div class="value-container">
-                <span class="result-value" id="seedingVolML">2.654 mL</span>
-                <span class="result-value sub-value" id="seedingVolUL">2654.03 μL</span>
+            <div class="result-group result-success">
+                <div class="result-row">
+                    <span class="result-label">Total Volume for Seeding</span>
+                    <div class="value-container">
+                        <span class="result-value" id="seedingVolML">2.654 mL</span>
+                        <span class="result-value sub-value" id="seedingVolUL">2654.03 μL</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-group result-primary">
+                <div class="result-row">
+                    <span class="result-label">SF++ (Medium Volume)</span>
+                    <div class="value-container">
+                        <span class="result-value" id="sfPlusML">18.346 mL</span>
+                        <span class="result-value sub-value" id="sfPlusUL">18345.97 μL</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="result-group result-primary">
-        <div class="result-row">
-            <span class="result-label">SF++ (Medium Volume)</span>
-            <div class="value-container">
-                <span class="result-value" id="sfPlusML">18.346 mL</span>
-                <span class="result-value sub-value" id="sfPlusUL">18345.97 μL</span>
+    <!-- 2. Concentration View -->
+    <div id="view-concentration" class="view-section">
+        <div class="calculator-card">
+            <h2>Concentration</h2>
+
+            <div class="form-group">
+                <label>Solution Volume (mL)</label>
+                <input type="number" id="solutionVol" value="10" step="any" oninput="calculateConcentration()">
+            </div>
+            <div class="form-group">
+                <label>Target CHIR Conc. (μM)</label>
+                <input type="number" id="chirTarget" value="3" step="any" oninput="calculateConcentration()">
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="result-group result-warning">
+                <div class="result-row">
+                    <div class="result-label">
+                        Required CHIR Volume
+                        <small>Stock: 10 mM</small>
+                    </div>
+                    <span class="result-value" id="chirVol">3.00 μL</span>
+                </div>
+            </div>
+
+            <div class="result-group result-success">
+                <div class="result-row">
+                    <div class="result-label">
+                        Required FGF Volume
+                        <small>Stock: 100 μg/mL (Target: 200 ng/mL)</small>
+                    </div>
+                    <span class="result-value" id="fgfVol">20.00 μL</span>
+                </div>
+            </div>
+
+            <div class="result-group result-primary">
+                <div class="result-row">
+                    <div class="result-label">
+                        Required Heparin Volume
+                        <small>Stock: 1 mg/mL (Target: 1 μg/mL)</small>
+                    </div>
+                    <span class="result-value" id="heparinVol">10.00 μL</span>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- 2. 浓度计算器卡片 -->
-<div class="calculator-card">
-    <h2>浓度计算</h2>
+    <!-- 3. Generation View -->
+    <div id="view-generation" class="view-section">
+        <div class="calculator-card">
+            <h2>Generation</h2>
 
-    <div class="form-group">
-        <label>溶液体积 (mL)</label>
-        <input type="number" id="solutionVol" value="10" step="any" oninput="calculateConcentration()">
-    </div>
-    <div class="form-group">
-        <label>CHIR 目标浓度 (μM)</label>
-        <input type="number" id="chirTarget" value="3" step="any" oninput="calculateConcentration()">
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="result-group result-warning">
-        <div class="result-row">
-            <div class="result-label">
-                CHIR 所需体积
-                <small>母液: 10 mM</small>
+            <div class="form-group">
+                <label>Cells from Counter</label>
+                <input type="number" id="genAvgCells" value="211" step="any" oninput="calculateGeneration()">
             </div>
-            <span class="result-value" id="chirVol">3.00 μL</span>
-        </div>
-    </div>
-
-    <div class="result-group result-success">
-        <div class="result-row">
-            <div class="result-label">
-                FGF 所需体积
-                <small>母液: 100 μg/mL (目标: 200 ng/mL)</small>
+            <div class="form-group">
+                <label>Target Organoids Total</label>
+                <input type="number" id="genTotalOrganoids" value="10" step="any" oninput="calculateGeneration()">
             </div>
-            <span class="result-value" id="fgfVol">20.00 μL</span>
-        </div>
-    </div>
 
-    <div class="result-group result-primary">
-        <div class="result-row">
-            <div class="result-label">
-                肝素 (Heparin) 所需体积
-                <small>母液: 1 mg/mL (目标: 1 μg/mL)</small>
+            <div class="divider"></div>
+
+            <div class="result-group result-info">
+                <div class="result-row">
+                    <div class="result-label">
+                        Cell Concentration (Cells/mL)
+                        <small>Formula: (Cells × 10000) ÷ 4</small>
+                    </div>
+                    <span class="result-value" id="genCellsPerMl">527,500</span>
+                </div>
             </div>
-            <span class="result-value" id="heparinVol">10.00 μL</span>
-        </div>
-    </div>
-</div>
 
-<!-- 3. Generation 卡片 (新增) -->
-<div class="calculator-card">
-    <h2>Generation (类器官生成计算)</h2>
-
-    <div class="form-group">
-        <label>计数器细胞数</label>
-        <input type="number" id="genAvgCells" value="211" step="any" oninput="calculateGeneration()">
-    </div>
-    <div class="form-group">
-        <label>想要的类器官总数</label>
-        <input type="number" id="genTotalOrganoids" value="10" step="any" oninput="calculateGeneration()">
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="result-group result-info">
-        <div class="result-row">
-            <div class="result-label">
-                细胞浓度 (Cells/mL)
-                <small>计算式: (细胞数 × 10000) ÷ 4</small>
-            </div>
-            <span class="result-value" id="genCellsPerMl">527,500</span>
-        </div>
-    </div>
-
-    <div class="result-group result-purple">
-        <div class="result-row">
-            <div class="result-label">
-                所需的溶液体积
-                <small>计算式: (200000 ÷ 细胞浓度) × 类器官总数</small>
-            </div>
-            <div class="value-container">
-                <span class="result-value" id="genReqVolML">3.791 mL</span>
-                <span class="result-value sub-value" id="genReqVolUL">3791.47 μL</span>
+            <div class="result-group result-purple">
+                <div class="result-row">
+                    <div class="result-label">
+                        Required Solution Volume
+                        <small>Formula: (200000 ÷ Cell Conc.) × Target Organoids</small>
+                    </div>
+                    <div class="value-container">
+                        <span class="result-value" id="genReqVolML">3.791 mL</span>
+                        <span class="result-value sub-value" id="genReqVolUL">3791.47 μL</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Bottom Nav Bar -->
+    <nav class="bottom-nav">
+        <div class="nav-card active" onclick="switchTab('seeding')" id="nav-seeding">
+            Seeding
+        </div>
+        <div class="nav-card" onclick="switchTab('concentration')" id="nav-concentration">
+            Concentration
+        </div>
+        <div class="nav-card" onclick="switchTab('generation')" id="nav-generation">
+            Generation
+        </div>
+    </nav>
 
 <script>
+    // --- Navigation Bar Switching Logic ---
+    function switchTab(tabName) {
+        // 1. Hide all view sections
+        document.querySelectorAll('.view-section').forEach(view => {
+            view.classList.remove('active');
+        });
+        
+        // 2. Remove active state from all nav buttons
+        document.querySelectorAll('.nav-card').forEach(nav => {
+            nav.classList.remove('active');
+        });
+
+        // 3. Activate the clicked view and corresponding button
+        document.getElementById(`view-${tabName}`).classList.add('active');
+        document.getElementById(`nav-${tabName}`).classList.add('active');
+    }
+
+    // --- Number Formatting ---
     function formatNumber(num, decimals = 3) {
         if (!isFinite(num)) return "0";
         return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
     }
 
-    // 1. 铺板计算逻辑
+    // --- 1. Seeding Calculation Logic ---
     function calculateSeeding() {
         const avgCells = parseFloat(document.getElementById('avgCells').value) || 0;
         const mediumVol = parseFloat(document.getElementById('mediumVol').value) || 0;
@@ -333,15 +417,13 @@
 
         document.getElementById('cellsPerMl').innerText = formatNumber(cellsPerMl, 0);
         document.getElementById('targetConcentration').innerText = formatNumber(targetConcentration, 0);
-        
         document.getElementById('seedingVolML').innerText = formatNumber(seedingVolML, 4) + " mL";
         document.getElementById('seedingVolUL').innerText = formatNumber(seedingVolML * 1000, 2) + " μL";
-        
         document.getElementById('sfPlusML').innerText = formatNumber(sfPlusML, 4) + " mL";
         document.getElementById('sfPlusUL').innerText = formatNumber(sfPlusML * 1000, 2) + " μL";
     }
 
-    // 2. 浓度计算逻辑
+    // --- 2. Concentration Calculation Logic ---
     function calculateConcentration() {
         const solutionVolML = parseFloat(document.getElementById('solutionVol').value) || 0;
         const chirTargetUM = parseFloat(document.getElementById('chirTarget').value) || 0;
@@ -362,15 +444,13 @@
         document.getElementById('heparinVol').innerText = formatNumber(heparinVolUl, 2) + " μL";
     }
 
-    // 3. Generation (生成) 计算逻辑
+    // --- 3. Generation Calculation Logic ---
     function calculateGeneration() {
         const cellCount = parseFloat(document.getElementById('genAvgCells').value) || 0;
         const organoidsTotal = parseFloat(document.getElementById('genTotalOrganoids').value) || 0;
 
-        // 步骤1：乘以10000再除以4，得到细胞浓度 (Cells/mL)
         const cellsPerMl = (cellCount * 10000) / 4;
         
-        // 步骤2：目标数为200000，计算公式为 (200000 / cellsPerMl) * organoidsTotal
         let reqVolML = 0;
         if (cellsPerMl > 0) {
             reqVolML = (200000 / cellsPerMl) * organoidsTotal;
@@ -381,7 +461,7 @@
         document.getElementById('genReqVolUL').innerText = formatNumber(reqVolML * 1000, 2) + " μL";
     }
 
-    // 页面加载时初始化所有计算器
+    // Initialize all calculators on page load
     window.onload = function() {
         calculateSeeding();
         calculateConcentration();
