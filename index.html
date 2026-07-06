@@ -32,23 +32,23 @@
             color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Align top to avoid content being covered on mobile */
+            align-items: flex-start; 
             min-height: 100vh;
-            padding: 40px 20px 120px 20px; /* Leave 120px space at the bottom for the nav bar */
+            padding: 40px 20px 120px 20px; 
             margin: 0;
             box-sizing: border-box;
         }
 
         /* View container, controls display/hide */
         .view-section {
-            display: none; /* Hide all views by default */
+            display: none; 
             width: 100%;
             max-width: 550px;
             animation: fadeIn 0.3s ease-in-out;
         }
 
         .view-section.active {
-            display: block; /* Show when active */
+            display: block; 
         }
 
         @keyframes fadeIn {
@@ -169,8 +169,8 @@
             justify-content: center;
             gap: 15px;
             padding: 15px 20px 25px 20px;
-            background: rgba(240, 244, 248, 0.85); /* Semi-transparent background */
-            backdrop-filter: blur(10px); /* Frosted glass effect */
+            background: rgba(240, 244, 248, 0.85); 
+            backdrop-filter: blur(10px); 
             box-sizing: border-box;
             z-index: 1000;
             box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03);
@@ -357,6 +357,17 @@
                     </div>
                 </div>
             </div>
+
+            <!-- New Result Section for Medium Needed -->
+            <div class="result-group result-primary">
+                <div class="result-row">
+                    <div class="result-label">
+                        Medium Needed
+                        <small>Formula: Target Organoids × 200 μL</small>
+                    </div>
+                    <span class="result-value" id="genMediumNeededML">2.000 mL</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -449,16 +460,23 @@
         const cellCount = parseFloat(document.getElementById('genAvgCells').value) || 0;
         const organoidsTotal = parseFloat(document.getElementById('genTotalOrganoids').value) || 0;
 
+        // Cell Concentration
         const cellsPerMl = (cellCount * 10000) / 4;
         
+        // Required Solution Volume
         let reqVolML = 0;
         if (cellsPerMl > 0) {
             reqVolML = (200000 / cellsPerMl) * organoidsTotal;
         }
 
+        // Medium Needed (organoidsTotal * 200 μL, displayed in mL)
+        const mediumNeededML = (organoidsTotal * 200) / 1000;
+
+        // Update DOM
         document.getElementById('genCellsPerMl').innerText = formatNumber(cellsPerMl, 0);
         document.getElementById('genReqVolML').innerText = formatNumber(reqVolML, 4) + " mL";
         document.getElementById('genReqVolUL').innerText = formatNumber(reqVolML * 1000, 2) + " μL";
+        document.getElementById('genMediumNeededML').innerText = formatNumber(mediumNeededML, 3) + " mL";
     }
 
     // Initialize all calculators on page load
